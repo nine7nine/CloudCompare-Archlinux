@@ -1,0 +1,130 @@
+# Original Author: Johannes Sauer <joh.sauer(at)gmail(dot)com>
+# Contributer: Danilo Bargen <aur at dbrgn dot ch>
+# Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
+
+pkgname=cloudcompare-git
+pkgver=2.6.2.r741.gcfcbdee
+pkgrel=2
+pkgdesc="A 3D point cloud (and triangular mesh) processing software"
+arch=('i686' 'x86_64')
+url="http://www.danielgm.net/cc/"
+license=('GPL2')
+depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' )
+makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' )
+optdepends=()
+source=("git+https://github.com/cloudcompare/trunk"
+        "git+https://github.com/cloudcompare/PoissonRecon"
+        "git+https://github.com/aboulch/normals_Hough"
+        "git+https://github.com/jlblancoc/nanoflann"
+	"CloudCompare.desktop"
+	"ccViewer.desktop")
+md5sums=('SKIP'
+         'SKIP'
+         'SKIP'
+         'SKIP'
+         'b85f0f499724fa0a706ff2d84e1482b3'
+         '02f1520423668f26bd358543f080333e')
+
+
+pkgver() {
+  cd "$srcdir/trunk"
+  git describe --long | sed -r 's/^v//;s/([^-]*-g)/r\1/;s/-/./g'
+}
+
+build() {
+
+  # Delete these files, if they exist. (* from previous local builds)
+
+  rm -Rf "$srcdir/trunk/plugins/qPoissonRecon/PoissonReconLib"
+  rm -Rf "$srcdir/PoissonReconLib"
+  rm -Rf "$srcdir/trunk/plugins/qHoughNormals/include"
+
+  # rename and copy PoissionReconLib into source tree, so that we can build the plugin.
+  # copy the normal_hough into source tree, add nanoflann header into build
+
+  mv -f "$srcdir/PoissonRecon" "$srcdir/PoissonReconLib"
+  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/trunk/plugins/qPoissonRecon"
+  cp -Rf "$srcdir/normals_Hough" "$srcdir/trunk/plugins/qHoughNormals"
+  mkdir "$srcdir/trunk/plugins/qHoughNormals/include"
+  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
+
+  cd "$srcdir/trunk"
+ 
+  [[ -d build ]] && rm -r build
+  mkdir -p build && cd build
+
+  # Currently, I don't build the kinect plugin or the qMMREG plugin.
+  # 1. I don't have a Kinect to test. But these are the cmake flags needed;
+  #		  -DINSTALL_QKINECT_PLUGIN=ON
+  #		  -DLIBFREENECT_INCLUDE_DIR="/usr/include"
+  #		  -DLIBFREENECT_LIBRARY_FILE="/usr/lib/libfreenect.so"
+  #
+  # 2. qMMREG requires VXT, i think... which isn't packaged for Archlinux &&
+  #    even after building it, I still couldn't get the plugin to build, due to
+  #    some issue with missing VNL headers. idk?
+  #
+  # 3. qHOUGH_NORMALS plugin needs to be able to find both eigen3 headers && nanoflann header.
+  #    eigen is packaged in Archlinux, nanoflann is NOT, but is found here;
+  #    https://github.com/jlblancoc/nanoflann
+  #
+  #		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
+  #		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
+  #		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
+  #
+  #    I've added nanoflann.hpp header file to CC's sources && the cmake option to source it.
+  #
+  #    *** However, qhough_normals plugin doesn't build after the last commit to it.
+ 
+  cmake .. \
+     	  -DCMAKE_BUILD_TYPE=Release \
+		  -DCMAKE_INSTALL_PREFIX=/usr \
+		  -DBUILD_QPCL_PLUGIN_DOCUMENTATION=ON \
+		  -DOPTION_USE_DXF_LIB=ON \
+		  -DOPTION_USE_SHAPE_LIB=ON \
+		  -DOPTION_USE_GDAL=ON \
+		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=OFF \
+  	          -DINSTALL_QPCL_PLUGIN=ON \
+		  -DINSTALL_QSRA_PLUGIN=ON \
+		  -DINSTALL_QPOISSON_RECON_PLUGIN=ON \
+		  -DINSTALL_QHPR_PLUGIN=ON \
+		  -DINSTALL_QRANSAC_SD_PLUGIN=ON \
+		  -DINSTALL_QKINECT_PLUGIN=OFF \
+		  -DINSTALL_QBLUR_PLUGIN=ON \
+		  -DINSTALL_QEDL_PLUGIN=ON \
+		  -DINSTALL_QPCV_PLUGIN=ON \
+		  -DINSTALL_QDUMMY_PLUGIN=OFF \
+		  -DINSTALL_QSSAO_PLUGIN=ON \
+		  -DINSTALL_QANIMATION_PLUGIN=ON \
+		  -DINSTALL_QFACETS_PLUGIN=ON \
+		  -DINSTALL_QHPR_PLUGIN=ON \
+		  -DINSTALL_QGMMREG_PLUGIN=OFF \
+		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON
+
+  while true; do
+    read -p "Do you want to edit the cmake configuration? [y/N]" yn
+ 	 yn=${yn:-n}
+    case $yn in
+       [Yy] )	cmake-gui .. 
+		  break;;
+       [Nn] )		  break;;
+#       * ) echo "Please answer y or n.";;
+    esac
+  done
+
+  make
+}
+
+package() {
+  cd "$srcdir/trunk/build"
+  make DESTDIR="$pkgdir/" install
+
+  # Icons for .desktop files
+  mkdir -p "${pkgdir}/usr/share/pixmaps"
+  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
+  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
+
+  # Launcher / .desktop files
+  mkdir -p "${pkgdir}/usr/share/applications"
+  install -D -m 644 "$srcdir/CloudCompare.desktop" "${pkgdir}/usr/share/applications/CloudCompare.desktop"
+  install -D -m 644 "$srcdir/ccViewer.desktop" "${pkgdir}/usr/share/applications/ccViewer.desktop"
+}
