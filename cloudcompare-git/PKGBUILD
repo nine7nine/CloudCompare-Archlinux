@@ -3,8 +3,8 @@
 # Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
 
 pkgname=cloudcompare-git
-pkgver=2.6.2.r741.gcfcbdee
-pkgrel=2
+pkgver=2.6.2.r742.g04be7ac
+pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
 url="http://www.danielgm.net/cc/"
@@ -14,7 +14,7 @@ makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' )
 optdepends=()
 source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
-        "git+https://github.com/aboulch/normals_Hough"
+        "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
 	"CloudCompare.desktop"
 	"ccViewer.desktop")
@@ -63,17 +63,6 @@ build() {
   #    even after building it, I still couldn't get the plugin to build, due to
   #    some issue with missing VNL headers. idk?
   #
-  # 3. qHOUGH_NORMALS plugin needs to be able to find both eigen3 headers && nanoflann header.
-  #    eigen is packaged in Archlinux, nanoflann is NOT, but is found here;
-  #    https://github.com/jlblancoc/nanoflann
-  #
-  #		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
-  #		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
-  #		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
-  #
-  #    I've added nanoflann.hpp header file to CC's sources && the cmake option to source it.
-  #
-  #    *** However, qhough_normals plugin doesn't build after the last commit to it.
  
   cmake .. \
      	  -DCMAKE_BUILD_TYPE=Release \
@@ -98,6 +87,9 @@ build() {
 		  -DINSTALL_QFACETS_PLUGIN=ON \
 		  -DINSTALL_QHPR_PLUGIN=ON \
 		  -DINSTALL_QGMMREG_PLUGIN=OFF \
+		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
+		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
+		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
 		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON
 
   while true; do
