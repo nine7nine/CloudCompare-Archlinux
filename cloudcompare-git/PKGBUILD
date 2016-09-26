@@ -3,7 +3,7 @@
 # Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
 
 pkgname=cloudcompare-git
-pkgver=2.6.2.r742.g04be7ac
+pkgver=2.6.2.r750.gb91085b
 pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
@@ -12,7 +12,7 @@ license=('GPL2')
 depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' )
 makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' )
 optdepends=()
-source=("git+https://github.com/cloudcompare/trunk"
+source=("git+https://github.com/nine7nine/cloudcompare-trunk.git"
         "git+https://github.com/cloudcompare/PoissonRecon"
         "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
@@ -27,7 +27,7 @@ md5sums=('SKIP'
 
 
 pkgver() {
-  cd "$srcdir/trunk"
+  cd "$srcdir/cloudcompare-trunk"
   git describe --long | sed -r 's/^v//;s/([^-]*-g)/r\1/;s/-/./g'
 }
 
@@ -35,20 +35,20 @@ build() {
 
   # Delete these files, if they exist. (* from previous local builds)
 
-  rm -Rf "$srcdir/trunk/plugins/qPoissonRecon/PoissonReconLib"
+  rm -Rf "$srcdir/cloudcompare-trunk/plugins/qPoissonRecon/PoissonReconLib"
   rm -Rf "$srcdir/PoissonReconLib"
-  rm -Rf "$srcdir/trunk/plugins/qHoughNormals/include"
+  rm -Rf "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include"
 
   # rename and copy PoissionReconLib into source tree, so that we can build the plugin.
   # copy the normal_hough into source tree, add nanoflann header into build
 
   mv -f "$srcdir/PoissonRecon" "$srcdir/PoissonReconLib"
-  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/trunk/plugins/qPoissonRecon"
-  cp -Rf "$srcdir/normals_Hough" "$srcdir/trunk/plugins/qHoughNormals"
-  mkdir "$srcdir/trunk/plugins/qHoughNormals/include"
-  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
+  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/cloudcompare-trunk/plugins/qPoissonRecon"
+  cp -Rf "$srcdir/normals_Hough" "$srcdir/cloudcompare-trunk/plugins/qHoughNormals"
+  mkdir "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include"
+  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include/nanoflann.hpp"
 
-  cd "$srcdir/trunk"
+  cd "$srcdir/cloudcompare-trunk"
  
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
@@ -71,26 +71,26 @@ build() {
 		  -DOPTION_USE_DXF_LIB=ON \
 		  -DOPTION_USE_SHAPE_LIB=ON \
 		  -DOPTION_USE_GDAL=ON \
-		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=OFF \
+		  -DCOMPILE_CC_CORE_LIB_WITH_CGAL=ON \
   	          -DINSTALL_QPCL_PLUGIN=ON \
 		  -DINSTALL_QSRA_PLUGIN=ON \
 		  -DINSTALL_QPOISSON_RECON_PLUGIN=ON \
 		  -DINSTALL_QHPR_PLUGIN=ON \
 		  -DINSTALL_QRANSAC_SD_PLUGIN=ON \
-		  -DINSTALL_QKINECT_PLUGIN=OFF \
 		  -DINSTALL_QBLUR_PLUGIN=ON \
 		  -DINSTALL_QEDL_PLUGIN=ON \
 		  -DINSTALL_QPCV_PLUGIN=ON \
-		  -DINSTALL_QDUMMY_PLUGIN=OFF \
 		  -DINSTALL_QSSAO_PLUGIN=ON \
 		  -DINSTALL_QANIMATION_PLUGIN=ON \
 		  -DINSTALL_QFACETS_PLUGIN=ON \
 		  -DINSTALL_QHPR_PLUGIN=ON \
-		  -DINSTALL_QGMMREG_PLUGIN=OFF \
 		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
-		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
+		  -DNANOFLANN_ROOT_DIR="$srcdir/cloudcompare-trunk/plugins/qHoughNormals" \
 		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
-		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON
+		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON \
+		  -DINSTALL_QGMMREG_PLUGIN=OFF \
+		  -DINSTALL_QKINECT_PLUGIN=OFF \
+		  -DINSTALL_QDUMMY_PLUGIN=OFF 
 
   while true; do
     read -p "Do you want to edit the cmake configuration? [y/N]" yn
@@ -107,13 +107,13 @@ build() {
 }
 
 package() {
-  cd "$srcdir/trunk/build"
+  cd "$srcdir/cloudcompare-trunk/build"
   make DESTDIR="$pkgdir/" install
 
   # Icons for .desktop files
   mkdir -p "${pkgdir}/usr/share/pixmaps"
-  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
-  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
+  install -D -m 644 "$srcdir/cloudcompare-trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
+  install -D -m 644 "$srcdir/cloudcompare-trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
 
   # Launcher / .desktop files
   mkdir -p "${pkgdir}/usr/share/applications"
