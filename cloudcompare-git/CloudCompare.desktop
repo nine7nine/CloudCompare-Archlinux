@@ -1,10 +1,10 @@
 #!/usr/bin/env xdg-open
 
 [Desktop Entry]
-Version=1.3.3
+Version=2.6.2
 Name=CloudCompare
-GenericName=Mesh processing
-Comment=View and process meshes
+GenericName=PointCloud and Mesh processing
+Comment=View/Process PointClouds and meshes
 Type=Application
 Exec=CloudCompare %U
 TryExec=CloudCompare

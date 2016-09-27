@@ -3,8 +3,8 @@
 [Desktop Entry]
 Version=2.6.2
 Name=ccViewer
-GenericName=Mesh processing
-Comment=View and process meshes
+GenericName=PointCloud and Mesh viewer
+Comment=View PointClouds and Meshes
 Type=Application
 Exec=ccViewer %U
 TryExec=ccViewer
