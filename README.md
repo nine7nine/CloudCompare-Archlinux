@@ -9,9 +9,9 @@ Just to keep on top of things, I will upload it on github to work on.
 
 There are two main folders/source packages;
 
-cloudcompare-git: archlinux source package for use with GCC
+* cloudcompare-git: archlinux source package for use with GCC
 
-cloudcompare_ICC-git: Archlinux source package for use with Intel C/C++ Compiler suite
+* cloudcompare_ICC-git: Archlinux source package for use with Intel C/C++ Compiler suite
 
 Both packages enable all plugins, minus; qDUMMY, qKINECT and qMMREG...
 
