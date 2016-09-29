@@ -1,3 +1,5 @@
+***NOTE: PLEASE USE THE SOURCE PACKAGE (src.tar.gz) ABOVE, while I am sorting out some changes in CC and PoissonReconLib.
+
 # CloudCompare - Archlinux package
 
 http://www.cloudcompare.org/
