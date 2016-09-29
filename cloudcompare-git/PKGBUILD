@@ -3,7 +3,7 @@
 # Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
 
 pkgname=cloudcompare-git
-pkgver=2.6.2.r750.gb91085b
+pkgver=2.6.2.r757.ge1e0a80
 pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
@@ -12,22 +12,24 @@ license=('GPL2')
 depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' )
 makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' )
 optdepends=()
-source=("git+https://github.com/nine7nine/cloudcompare-trunk.git"
+source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
         "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
+        "qhull2015_ICCfix.patch"
 	"CloudCompare.desktop"
 	"ccViewer.desktop")
 md5sums=('SKIP'
          'SKIP'
          'SKIP'
          'SKIP'
-         'b85f0f499724fa0a706ff2d84e1482b3'
-         '02f1520423668f26bd358543f080333e')
+         '8e37707c4234cde87c7ceafa5c47223e'
+         'd95632ae15914a35d24257ff5bf80d02'
+         '59ce07ede0a408071d9afceca0c48803')
 
 
 pkgver() {
-  cd "$srcdir/cloudcompare-trunk"
+  cd "$srcdir/trunk"
   git describe --long | sed -r 's/^v//;s/([^-]*-g)/r\1/;s/-/./g'
 }
 
@@ -35,20 +37,22 @@ build() {
 
   # Delete these files, if they exist. (* from previous local builds)
 
-  rm -Rf "$srcdir/cloudcompare-trunk/plugins/qPoissonRecon/PoissonReconLib"
+  rm -Rf "$srcdir/trunk/plugins/qPoissonRecon/PoissonReconLib"
   rm -Rf "$srcdir/PoissonReconLib"
-  rm -Rf "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include"
+  rm -Rf "$srcdir/trunk/plugins/qHoughNormals/include"
 
   # rename and copy PoissionReconLib into source tree, so that we can build the plugin.
   # copy the normal_hough into source tree, add nanoflann header into build
 
   mv -f "$srcdir/PoissonRecon" "$srcdir/PoissonReconLib"
-  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/cloudcompare-trunk/plugins/qPoissonRecon"
-  cp -Rf "$srcdir/normals_Hough" "$srcdir/cloudcompare-trunk/plugins/qHoughNormals"
-  mkdir "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include"
-  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/cloudcompare-trunk/plugins/qHoughNormals/include/nanoflann.hpp"
+  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/trunk/plugins/qPoissonRecon"
+  cp -Rf "$srcdir/normals_Hough" "$srcdir/trunk/plugins/qHoughNormals"
+  mkdir "$srcdir/trunk/plugins/qHoughNormals/include"
+  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
 
-  cd "$srcdir/cloudcompare-trunk"
+  cd "$srcdir/trunk"
+
+  patch -Np1 -i "$srcdir/qhull2015_ICCfix.patch"
  
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
@@ -85,7 +89,7 @@ build() {
 		  -DINSTALL_QFACETS_PLUGIN=ON \
 		  -DINSTALL_QHPR_PLUGIN=ON \
 		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
-		  -DNANOFLANN_ROOT_DIR="$srcdir/cloudcompare-trunk/plugins/qHoughNormals" \
+		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
 		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
 		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON \
 		  -DINSTALL_QGMMREG_PLUGIN=OFF \
@@ -107,13 +111,13 @@ build() {
 }
 
 package() {
-  cd "$srcdir/cloudcompare-trunk/build"
+  cd "$srcdir/trunk/build"
   make DESTDIR="$pkgdir/" install
 
   # Icons for .desktop files
   mkdir -p "${pkgdir}/usr/share/pixmaps"
-  install -D -m 644 "$srcdir/cloudcompare-trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
-  install -D -m 644 "$srcdir/cloudcompare-trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
+  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
+  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
 
   # Launcher / .desktop files
   mkdir -p "${pkgdir}/usr/share/applications"
