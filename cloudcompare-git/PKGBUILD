@@ -16,14 +16,12 @@ source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
         "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
-        "qhull2015_ICCfix.patch"
 	"CloudCompare.desktop"
 	"ccViewer.desktop")
 md5sums=('SKIP'
          'SKIP'
          'SKIP'
          'SKIP'
-         '8e37707c4234cde87c7ceafa5c47223e'
          'd95632ae15914a35d24257ff5bf80d02'
          '59ce07ede0a408071d9afceca0c48803')
 
@@ -51,8 +49,6 @@ build() {
   cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
 
   cd "$srcdir/trunk"
-
-  patch -Np1 -i "$srcdir/qhull2015_ICCfix.patch"
  
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
@@ -63,9 +59,7 @@ build() {
   #		  -DLIBFREENECT_INCLUDE_DIR="/usr/include"
   #		  -DLIBFREENECT_LIBRARY_FILE="/usr/lib/libfreenect.so"
   #
-  # 2. qMMREG requires VXT, i think... which isn't packaged for Archlinux &&
-  #    even after building it, I still couldn't get the plugin to build, due to
-  #    some issue with missing VNL headers. idk?
+  # 2. qMMREG won't build for me yet, something is up with it + VXL/vnl headers. wtf?
   #
  
   cmake .. \

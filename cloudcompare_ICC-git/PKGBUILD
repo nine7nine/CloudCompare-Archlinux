@@ -16,14 +16,12 @@ source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
         "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
-        "qhull2015_ICCfix.patch"
 	"CloudCompare.desktop"
 	"ccViewer.desktop")
 md5sums=('SKIP'
          'SKIP'
          'SKIP'
          'SKIP'
-         '8e37707c4234cde87c7ceafa5c47223e'
          'd95632ae15914a35d24257ff5bf80d02'
          '59ce07ede0a408071d9afceca0c48803')
 
@@ -60,8 +58,6 @@ export LD="xild"
   cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
 
   cd "$srcdir/trunk"
-
-  patch -Np1 -i "$srcdir/qhull2015_ICCfix.patch"
  
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
