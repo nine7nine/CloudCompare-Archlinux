@@ -24,7 +24,9 @@ The two folders/source packages are not needed for building CC, they are for spe
 * blas_icc_git is only for the Intel/icc build, *if" liblas is enabled in the build. Requires;
 
 -DOPTION_USE_LIBLAS=ON
+
 -DLIBLAS_INCLUDE_DIR=/usr/include
+
 -DLIBLAS_RELEASE_LIBRARY_FILE=/usr/lib/liblas.so
 
 ...and liblas_icc-git to be built from source, prior to compiling CC.
