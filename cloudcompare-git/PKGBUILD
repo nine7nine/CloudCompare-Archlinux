@@ -9,8 +9,8 @@ pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
 url="http://www.danielgm.net/cc/"
 license=('GPL2')
-depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp')
-makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp')
+depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
+makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
 optdepends=()
 source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
@@ -61,7 +61,22 @@ build() {
   #
   # 2. qMMREG won't build for me yet, something is up with it + VXL/vnl headers. wtf?
   #
- 
+  # 3. other stuff;
+  #
+  # 3DMOUSE support
+  #
+  #		  -DOPTION_SUPPORT_3DCONNEXION_DEVICES=ON \
+  #
+  # BLAS
+  #
+  #		  -DOPTION_USE_LIBLAS=ON \
+  #		  -DLIBLAS_INCLUDE_DIR= \
+  #		  -DLIBLAS_RELEASE_LIBRARY_FILE= \
+  #
+  # Don't enable; (glx problem)
+  #
+  #		  -DOPTION_GL_QUAD_BUFFER_SUPPORT=ON \
+  
   cmake .. \
      	  -DCMAKE_BUILD_TYPE=Release \
 		  -DCMAKE_INSTALL_PREFIX=/usr \
@@ -69,6 +84,9 @@ build() {
 		  -DOPTION_USE_DXF_LIB=ON \
 		  -DOPTION_USE_SHAPE_LIB=ON \
 		  -DOPTION_USE_GDAL=ON \
+		  -DFFMPEG_LIBRARY_DIR=/usr/lib \
+		  -DFFMPEG_INCLUDE_DIR=/usr/include \
+  		  -DWITH_FFMPEG_SUPPORT=YES \
 		  -DCOMPILE_CC_CORE_LIB_WITH_CGAL=ON \
   	          -DINSTALL_QPCL_PLUGIN=ON \
 		  -DINSTALL_QSRA_PLUGIN=ON \
