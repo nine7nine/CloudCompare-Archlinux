@@ -113,7 +113,7 @@ export LD="xild"
     esac
   done
 
-  make -j5 CC=icc HOSTCC=icc CXX=icpc HOSTCXX=icpc
+  make CC=icc HOSTCC=icc CXX=icpc HOSTCXX=icpc
 }
 
 package() {
