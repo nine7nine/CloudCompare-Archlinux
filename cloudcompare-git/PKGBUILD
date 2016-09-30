@@ -3,7 +3,7 @@
 # Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
 
 pkgname=cloudcompare-git
-pkgver=2.6.2.r757.ge1e0a80
+pkgver=2.6.2.r760.ge18ef36
 pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
@@ -72,7 +72,10 @@ build() {
 		  -DCOMPILE_CC_CORE_LIB_WITH_CGAL=ON \
   	          -DINSTALL_QPCL_PLUGIN=ON \
 		  -DINSTALL_QSRA_PLUGIN=ON \
+		  -DINSTALL_QCSF_PLUGIN=ON \
+		  -DINSTALL_QCSV_MATRIX_IO_PLUGIN=ON \
 		  -DINSTALL_QPOISSON_RECON_PLUGIN=ON \
+  		  -DPOISSON_RECON_WITH_OPEN_MP=ON \
 		  -DINSTALL_QHPR_PLUGIN=ON \
 		  -DINSTALL_QRANSAC_SD_PLUGIN=ON \
 		  -DINSTALL_QBLUR_PLUGIN=ON \
