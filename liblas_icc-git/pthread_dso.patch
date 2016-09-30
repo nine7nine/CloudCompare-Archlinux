@@ -1,0 +1,11 @@
+--- apps/CMakeLists.txt.orig	2016-09-30 01:10:04.089319467 -0400
++++ apps/CMakeLists.txt	2016-09-30 01:09:45.748963927 -0400
+@@ -107,7 +107,7 @@
+ if(LAS2COL)
+     set(LAS2COL_SRC lascommon.c ${LAS2COL}.c)
+     add_executable(${LAS2COL} ${LAS2COL_SRC})
+-    target_link_libraries(${LAS2COL} ${LIBLAS_C_LIB_NAME})
++    target_link_libraries(${LAS2COL} ${LIBLAS_C_LIB_NAME} ${CMAKE_THREAD_LIBS_INIT})
+ endif()
+ 
+ # Build las2pg
