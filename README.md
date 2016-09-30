@@ -19,9 +19,9 @@ NOTES:
 
 The two folders/source packages are not needed for building CC, they are for specifc features that aren't enabled.
 
-* vxl-git is not required to compile Cloudcompare; it is however, a dependency for the qGMMREG plugin (currently disabled!)
+* vxl-git is not required to compile Cloudcompare; it is however, a dependency for the qGMMREG plugin
 
-* blas_icc_git is only for the Intel/icc build, *if" liblas is enabled in the build (currently disabled!). Requires;
+* blas_icc_git is only for the Intel/icc build, *if" liblas is enabled in the build. Requires;
 
 -DOPTION_USE_LIBLAS=ON
 -DLIBLAS_INCLUDE_DIR=/usr/include
