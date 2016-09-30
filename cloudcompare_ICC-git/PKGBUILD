@@ -79,8 +79,8 @@ export LD="xild"
   # BLAS
   #
   #		  -DOPTION_USE_LIBLAS=ON \
-  #		  -DLIBLAS_INCLUDE_DIR= \
-  #		  -DLIBLAS_RELEASE_LIBRARY_FILE= \
+  #		  -DLIBLAS_INCLUDE_DIR=/usr/include \
+  #		  -DLIBLAS_RELEASE_LIBRARY_FILE=/usr/lib/liblas.so \
   #
   # Don't enable; (glx problem)
   #
