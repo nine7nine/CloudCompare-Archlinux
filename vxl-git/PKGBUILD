@@ -1,0 +1,43 @@
+# Maintainer: Peter Mattern <pmattern at arcor dot de>
+
+# Notes on dependencies
+#
+# I'm not positive on all of VXL's dependencies, but will figure it out... I will fix the deps
+# at a later date.
+
+_pkgname=vxl
+pkgname=$_pkgname-git
+pkgver=nightly
+pkgrel=1
+pkgdesc='A multi-platform collection of C++ software libraries for Computer Vision and Image Understanding'
+arch=('i686' 'x86_64')
+url='https://github.com/vxl/vxl'
+license=('BSD')
+depends=('vtk')
+makedepends=('git' 'cmake' 'doxygen' 'boost')
+provides=("$_pkgname")
+conflicts=("$_pkgname")
+source=("git+https://github.com/vxl/vxl.git")
+sha256sums=('SKIP')
+
+build() {
+
+  rm -Rf build && mkdir build && cd build
+  cmake $srcdir/$_pkgname \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DBUILD_DOCUMENTATION=ON \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_CORE_GEOMETRY=ON \
+      -DBUILD_CORE_NUMERICS=ON \
+      -DBUILD_CORE_SERIALISATION=ON \
+      -DBUILD_CORE_UTILITIES=ON \
+      -DBUILD_CORE_IMAGING=ON \
+      -DBUILD_TESTING=OFF 
+
+  make -j4
+}
+
+package() {
+  cd build
+  make DESTDIR="$pkgdir" install
+}
