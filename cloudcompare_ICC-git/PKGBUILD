@@ -9,8 +9,8 @@ pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
 url="http://www.danielgm.net/cc/"
 license=('GPL2')
-depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' )
-makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' )
+depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp')
+makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp')
 optdepends=()
 source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
