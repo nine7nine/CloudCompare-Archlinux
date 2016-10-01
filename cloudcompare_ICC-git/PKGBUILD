@@ -9,8 +9,8 @@ pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
 url="http://www.danielgm.net/cc/"
 license=('GPL2')
-depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
-makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
+depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg' 'intel-parallel-studio-xe')
+makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg' 'intel-parallel-studio-xe')
 optdepends=()
 source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
@@ -38,7 +38,7 @@ build() {
 export CC="icc"
 export CXX="icpc"
 export HOSTCC=icc
-export CFLAGS="-march=native -O3 -pipe"
+export CFLAGS="-march=native -O3 -pipe  -qopenmp -parallel -xHOST"
 export CXXFLAGS="${CFLAGS}"
 export LDFLAGS="-Wl,-O1,--sort-common,--as-needed"
 export AR="xiar"
