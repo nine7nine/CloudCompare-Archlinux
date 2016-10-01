@@ -66,33 +66,44 @@ export LD="xild"
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
 
-  # 1. I don't have a Kinect to test. But these are the cmake flags needed;
+  # KINECT support 
+  #
   #		  -DINSTALL_QKINECT_PLUGIN=ON
   #		  -DLIBFREENECT_INCLUDE_DIR="/usr/include"
   #		  -DLIBFREENECT_LIBRARY_FILE="/usr/lib/libfreenect.so"
   #
-  # 2. qMMREG is going to be removed
-  #
-  # 3. other stuff;
+  # * Disabled: I can't get it's dependencies working on Archlinux
   #
   # 3DMOUSE support
   #
   #		  -DOPTION_SUPPORT_3DCONNEXION_DEVICES=ON \
   #
-  # LIBLAS
+  # * Disabled: I don't have access to this h/w.
+  #
+  # LIBLAS support
   #
   #		  -DOPTION_USE_LIBLAS=ON \
   #		  -DLIBLAS_INCLUDE_DIR=/usr/include \
   #		  -DLIBLAS_RELEASE_LIBRARY_FILE=/usr/lib/liblas.so \
+  #
+  # * can be enabled, but requires liblas/liblas-git in AUR. I use this with ICC build, locally.
   #
   # LIBE57 lidar format 
   # 
   #   		  -DOPTION_USE_LIBE57=ON \
   #		  -DLIBE57_INSTALL_DIR=  \
   #
-  # Don't enable; 
+  # * Disabled: not packaged for Archlinux, can't pull it in during build like CC plugins.
   #
+  # Don't enable / Disabled for good reasons; 
+  #
+  #		  -DINSTALL_QGMMREG_PLUGIN=ON \
   #		  -DOPTION_GL_QUAD_BUFFER_SUPPORT=ON \
+  #		  -DINSTALL_QDUMMY_PLUGIN=ON 
+  #
+  #  - qGMMREG is set to be reomved from CC
+  #  - GL_QUAD_BUFFER_SUPPORT is responisble for the glx crash in Qt-4.7 on Archlinux
+  #  - qDUMMY is just an example plugin, no point in enabling it
   
   cmake .. \
      	  -DCMAKE_BUILD_TYPE=Release \
