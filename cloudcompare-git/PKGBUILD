@@ -3,7 +3,7 @@
 # Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
 
 pkgname=cloudcompare-git
-pkgver=2.6.2.r760.ge18ef36
+pkgver=2.6.2.r761.gecd5c88
 pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
@@ -16,12 +16,14 @@ source=("git+https://github.com/cloudcompare/trunk"
         "git+https://github.com/cloudcompare/PoissonRecon"
         "git+https://github.com/cloudcompare/normals_Hough"
         "git+https://github.com/jlblancoc/nanoflann"
+        "Poission_No_MmemoryUsage_call.patch"
 	"CloudCompare.desktop"
 	"ccViewer.desktop")
 md5sums=('SKIP'
          'SKIP'
          'SKIP'
          'SKIP'
+         'e6d7e438c446737df3b2bb4648b902ac'
          'd95632ae15914a35d24257ff5bf80d02'
          '59ce07ede0a408071d9afceca0c48803')
 
@@ -49,17 +51,18 @@ build() {
   cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
 
   cd "$srcdir/trunk"
+
+  patch -Np1 -i "$srcdir/Poission_No_MmemoryUsage_call.patch"
  
   [[ -d build ]] && rm -r build
   mkdir -p build && cd build
 
-  # Currently, I don't build the kinect plugin or the qMMREG plugin.
   # 1. I don't have a Kinect to test. But these are the cmake flags needed;
   #		  -DINSTALL_QKINECT_PLUGIN=ON
   #		  -DLIBFREENECT_INCLUDE_DIR="/usr/include"
   #		  -DLIBFREENECT_LIBRARY_FILE="/usr/lib/libfreenect.so"
   #
-  # 2. qMMREG won't build for me yet, something is up with it + VXL/vnl headers. wtf?
+  # 2. qMMREG is going to be removed
   #
   # 3. other stuff;
   #
@@ -67,13 +70,18 @@ build() {
   #
   #		  -DOPTION_SUPPORT_3DCONNEXION_DEVICES=ON \
   #
-  # BLAS
+  # LIBLAS
   #
   #		  -DOPTION_USE_LIBLAS=ON \
   #		  -DLIBLAS_INCLUDE_DIR=/usr/include \
   #		  -DLIBLAS_RELEASE_LIBRARY_FILE=/usr/lib/liblas.so \
   #
-  # Don't enable; (glx problem)
+  # LIBE57 lidar format 
+  # 
+  #   		  -DOPTION_USE_LIBE57=ON \
+  #		  -DLIBE57_INSTALL_DIR=  \
+  #
+  # Don't enable; 
   #
   #		  -DOPTION_GL_QUAD_BUFFER_SUPPORT=ON \
   
