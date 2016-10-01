@@ -38,7 +38,7 @@ build() {
 export CC="icc"
 export CXX="icpc"
 export HOSTCC=icc
-export CFLAGS="-march=native -O3 -pipe  -qopenmp -parallel -xHOST"
+export CFLAGS="-march=native -O3 -pipe -qopenmp -parallel -xHOST"
 export CXXFLAGS="${CFLAGS}"
 export LDFLAGS="-Wl,-O1,--sort-common,--as-needed"
 export AR="xiar"
