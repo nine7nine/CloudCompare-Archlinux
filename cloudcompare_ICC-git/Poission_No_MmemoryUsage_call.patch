@@ -1,0 +1,15 @@
+--- trunk/plugins/qPoissonRecon/PoissonReconLib/Src/MultiGridOctreeData.System.inl.orig	2016-09-30 00:27:27.050031998 -0400
++++ trunk/plugins/qPoissonRecon/PoissonReconLib/Src/MultiGridOctreeData.System.inl	2016-10-01 02:04:28.550065563 -0400
+@@ -1290,11 +1290,6 @@
+ 			_updateConstraintsFromCoarser( F , interpolationInfo , neighbors , pNeighbors , node , constraints , metSolution , childIntegrator , stencils[x][y][z] , bsData );
+ 		}
+ 	}
+-#if !defined( _WIN32 ) && !defined( _WIN64 )
+-#pragma message( "[WARNING] I'm not sure how expensive this system call is on non-Windows system. (You may want to comment this out.)" )
+-#endif // !_WIN32 && !_WIN64
+-	memoryUsage();
+-	return 1;
+ }
+ 
+ #ifndef MOD
+
