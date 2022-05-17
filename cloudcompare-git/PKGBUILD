@@ -1,161 +1,165 @@
-# Original Author: Johannes Sauer <joh.sauer(at)gmail(dot)com>
-# Contributer: Danilo Bargen <aur at dbrgn dot ch>
-# Maintainer: Jordan Johnston <johnstonljordan(at)gmail(dot)com>
+#!/hint/bash
+# Maintainer  : bartus <arch-user-repo(at)bartus.33mail.com>
+# Contributor : Johannes Sauer <joh.sauer(at)gmail(dot)com>
+# Contributor : Danilo Bargen <aur at dbrgn dot ch>
+# shellcheck disable=SC2034,SC2154 # allow unused/uninitialized variables.
 
-pkgname=cloudcompare-git
-pkgver=2.6.2.r761.gecd5c88
+name=cloudcompare
+#_fragment="#branch="
+options=('!strip') # strip would also remove plugins, for some reason
+pkgname=${name}-git
+pkgver=2.10.2.r1076.g541800c9
 pkgrel=1
 pkgdesc="A 3D point cloud (and triangular mesh) processing software"
 arch=('i686' 'x86_64')
 url="http://www.danielgm.net/cc/"
 license=('GPL2')
-depends=('qt5-base' 'glu' 'mesa' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
-makedepends=('git' 'cmake' 'pcl' 'gdal' 'cgal' 'pcl' 'eigen' 'openmp' 'ffmpeg')
-optdepends=()
-source=("git+https://github.com/cloudcompare/trunk"
-        "git+https://github.com/cloudcompare/PoissonRecon"
-        "git+https://github.com/cloudcompare/normals_Hough"
-        "git+https://github.com/jlblancoc/nanoflann"
-        "Poission_No_MmemoryUsage_call.patch"
-	"CloudCompare.desktop"
-	"ccViewer.desktop")
-md5sums=('SKIP'
-         'SKIP'
-         'SKIP'
-         'SKIP'
-         'e6d7e438c446737df3b2bb4648b902ac'
-         'd95632ae15914a35d24257ff5bf80d02'
-         '59ce07ede0a408071d9afceca0c48803')
+depends=('cgal' 'fbx-sdk' 'ffmpeg4.4' 'glew' 'glu' 'mesa' 'mpir' 'pcl' 'pdal' 'qt5-base' 'qt5-tools' 'qt5-svg' 'qt5-websockets' 'shapelib' 'tbb' 'opencascade' 'opencv' 'gdal')
+#fix pcl:>vtk:>vtkm:>openmp missing deps
+depends+=(openmp)
+makedepends=('clang' 'cmake' 'doxygen' 'git' 'laz-perf' 'libharu' 'ninja' 'proj' 'python')
+conflicts=('cloudcompare')
+provides=('cloudcompare')
+source=("${name}::git+https://github.com/CloudCompare/CloudCompare.git${_fragment}"
+        "${name}-cork::git+https://github.com/CloudCompare/cork.git"
+        CloudCompare.desktop
+        ccViewer.desktop
+        )
+sha256sums=('SKIP'
+            'SKIP'
+            '14096df9cf7aca3099d5df1585d1cf669544e9b10754dce3d2507100dd7034fe'
+            '821ac2540e1196774e26f8033946ce7b36223dae7a2a7c78f4a901b4177f68cc'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
 
+prepare() {
+  prepare_submodule
+  #fix gcc:11 porting
+  sed '1 i\#include <limits>' -i "${srcdir}/${name}"/plugins/core/IO/qE57IO/extern/libE57Format/src/E57XmlParser.cpp
+}
 
 pkgver() {
-  cd "$srcdir/trunk"
-  git describe --long | sed -r 's/^v//;s/([^-]*-g)/r\1/;s/-/./g'
+  git -C "${srcdir}/${name}" describe --long --tag | sed -r 's/^v//;s/([^-]*-g)/r\1/;s/-/./g'
 }
 
 build() {
-
-  # Delete these files, if they exist. (* from previous local builds)
-
-  rm -Rf "$srcdir/trunk/plugins/qPoissonRecon/PoissonReconLib"
-  rm -Rf "$srcdir/PoissonReconLib"
-  rm -Rf "$srcdir/trunk/plugins/qHoughNormals/include"
-
-  # rename and copy PoissionReconLib into source tree, so that we can build the plugin.
-  # copy the normal_hough into source tree, add nanoflann header into build
-
-  mv -f "$srcdir/PoissonRecon" "$srcdir/PoissonReconLib"
-  cp -Rf "$srcdir/PoissonReconLib" "$srcdir/trunk/plugins/qPoissonRecon"
-  cp -Rf "$srcdir/normals_Hough" "$srcdir/trunk/plugins/qHoughNormals"
-  mkdir "$srcdir/trunk/plugins/qHoughNormals/include"
-  cp -f "$srcdir/nanoflann/include/nanoflann.hpp" "$srcdir/trunk/plugins/qHoughNormals/include/nanoflann.hpp"
-
-  cd "$srcdir/trunk"
-
-  patch -Np1 -i "$srcdir/Poission_No_MmemoryUsage_call.patch"
- 
-  [[ -d build ]] && rm -r build
-  mkdir -p build && cd build
-
-  # KINECT support 
-  #
-  #		  -DINSTALL_QKINECT_PLUGIN=ON
-  #		  -DLIBFREENECT_INCLUDE_DIR="/usr/include"
-  #		  -DLIBFREENECT_LIBRARY_FILE="/usr/lib/libfreenect.so"
-  #
-  # * Disabled: I can't get it's dependencies working on Archlinux
-  #
-  # 3DMOUSE support
-  #
-  #		  -DOPTION_SUPPORT_3DCONNEXION_DEVICES=ON \
-  #
-  # * Disabled: I don't have access to this h/w.
-  #
-  # LIBLAS support
-  #
-  #		  -DOPTION_USE_LIBLAS=ON \
-  #		  -DLIBLAS_INCLUDE_DIR=/usr/include \
-  #		  -DLIBLAS_RELEASE_LIBRARY_FILE=/usr/lib/liblas.so \
-  #
-  # * can be enabled, but requires liblas/liblas-git in AUR. I use this with ICC build, locally.
-  #
-  # LIBE57 lidar format 
-  # 
-  #   		  -DOPTION_USE_LIBE57=ON \
-  #		  -DLIBE57_INSTALL_DIR=  \
-  #
-  # * Disabled: not packaged for Archlinux, can't pull it in during build like CC plugins.
-  #
-  # Don't enable / Disabled for good reasons; 
-  #
-  #		  -DINSTALL_QGMMREG_PLUGIN=ON \
-  #		  -DOPTION_GL_QUAD_BUFFER_SUPPORT=ON \
-  #		  -DINSTALL_QDUMMY_PLUGIN=ON 
-  #
-  #  - qGMMREG is set to be reomved from CC
-  #  - GL_QUAD_BUFFER_SUPPORT is responisble for the glx crash in Qt-4.7 on Archlinux
-  #  - qDUMMY is just an example plugin, no point in enabling it
-
-  cmake .. \
-     	  -DCMAKE_BUILD_TYPE=Release \
-		  -DCMAKE_INSTALL_PREFIX=/usr \
-		  -DBUILD_QPCL_PLUGIN_DOCUMENTATION=ON \
-		  -DOPTION_USE_DXF_LIB=ON \
-		  -DOPTION_USE_SHAPE_LIB=ON \
-		  -DOPTION_USE_GDAL=ON \
-		  -DFFMPEG_LIBRARY_DIR=/usr/lib \
-		  -DFFMPEG_INCLUDE_DIR=/usr/include \
-  		  -DWITH_FFMPEG_SUPPORT=YES \
-		  -DCOMPILE_CC_CORE_LIB_WITH_CGAL=ON \
-  	          -DINSTALL_QPCL_PLUGIN=ON \
-		  -DINSTALL_QSRA_PLUGIN=ON \
-		  -DINSTALL_QCSF_PLUGIN=ON \
-		  -DINSTALL_QCSV_MATRIX_IO_PLUGIN=ON \
-		  -DINSTALL_QPOISSON_RECON_PLUGIN=ON \
-  		  -DPOISSON_RECON_WITH_OPEN_MP=ON \
-		  -DINSTALL_QHPR_PLUGIN=ON \
-		  -DINSTALL_QRANSAC_SD_PLUGIN=ON \
-		  -DINSTALL_QBLUR_PLUGIN=ON \
-		  -DINSTALL_QEDL_PLUGIN=ON \
-		  -DINSTALL_QPCV_PLUGIN=ON \
-		  -DINSTALL_QSSAO_PLUGIN=ON \
-		  -DINSTALL_QANIMATION_PLUGIN=ON \
-		  -DINSTALL_QFACETS_PLUGIN=ON \
-		  -DINSTALL_QHPR_PLUGIN=ON \
-		  -DEIGEN_ROOT_DIR=/usr/include/eigen3 \
-		  -DNANOFLANN_ROOT_DIR="$srcdir/trunk/plugins/qHoughNormals" \
-		  -DINSTALL_QHOUGH_NORMALS_PLUGIN=ON \
-		  -DINSTALL_QPHOTOSCAN_IO_PLUGIN=ON \
-		  -DINSTALL_QGMMREG_PLUGIN=OFF \
-		  -DINSTALL_QKINECT_PLUGIN=OFF \
-  		  -DOPTION_GL_QUAD_BUFFER_SUPPORT=OFF \
-		  -DINSTALL_QDUMMY_PLUGIN=OFF 
-
-  while true; do
-    read -p "Do you want to edit the cmake configuration? [y/N]" yn
- 	 yn=${yn:-n}
-    case $yn in
-       [Yy] )	cmake-gui .. 
-		  break;;
-       [Nn] )		  break;;
-#       * ) echo "Please answer y or n.";;
-    esac
-  done
-
-  make
+  export CCACHE_BASEDIR="$srcdir"
+# shellcheck disable=SC2191
+  CMAKE_FLAGS=(
+        -Wno-dev
+        -DPCL_QHULL_REQUIRED_TYPE=SHARED
+        -DCMAKE_CXX_STANDARD=14
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS -fpermissive -DSUPPORT_TOPO_STREAM_OPERATORS -Wno-deprecated-declarations"
+        -DCMAKE_INSTALL_PREFIX=/usr
+        -DCMAKE_INSTALL_LIBDIR=lib
+        -DCMAKE_BUILD_TYPE=Release
+        -DCCCORELIB_USE_CGAL=ON
+        -DCCCORELIB_USE_TBB=OFF
+        -DPOISSON_RECON_WITH_OPEN_MP:BOOL=ON
+        -DPLUGIN_EXAMPLE_GL:BOOL=OFF # no need to bundle examples
+        -DPLUGIN_EXAMPLE_IO:BOOL=OFF
+        -DPLUGIN_EXAMPLE_STANDARD:BOOL=OFF
+        -DPLUGIN_GL_QEDL:BOOL=ON
+        -DPLUGIN_GL_QSSAO:BOOL=ON
+        -DPLUGIN_IO_QADDITIONAL:BOOL=ON
+        -DPLUGIN_IO_QCORE:BOOL=ON
+        -DPLUGIN_IO_QCSV_MATRIX:BOOL=ON
+        -DPLUGIN_IO_QE57:BOOL=ON
+        -DPLUGIN_IO_QFBX:BOOL=ON # requires update of AUR/fbx-sdk (https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-1-1/fbx202011_fbxsdk_linux.tar.gz)
+        -DFBX_SDK_INCLUDE_DIR:PATH=/usr/include
+        -DFBX_SDK_LIBRARY_FILE:FILEPATH=/usr/lib/libfbxsdk.so
+        -DPLUGIN_IO_QPDAL:BOOL=ON
+        -DPLUGIN_IO_QPHOTOSCAN:BOOL=ON
+        -DPLUGIN_IO_QRDB:BOOL=OFF # requires rdblib (package for AUR from http://www.riegl.com/products/software-packages/rdblib/)
+        -DPLUGIN_IO_QSTEP=ON # requires opencascade
+        -DOPENCASCADE_INC_DIR="/usr/include/opencascade"
+        -DOPENCASCADE_LIB_DIR="/usr/lib"
+        -DPLUGIN_STANDARD_QCANUPO:BOOL=ON 
+        -DPLUGIN_STANDARD_QCOMPASS:BOOL=ON
+        -DPLUGIN_STANDARD_QCORK:BOOL=ON # require mpir, cork (cork-git is not enough)
+        -DMPIR_INCLUDE_DIR:PATH=/usr/include # required by qcork plugin
+        -DCORK_INCLUDE_DIR:PATH="${srcdir}/${name}-cork/src" # required by qcork plugin
+        -DFFMPEG_INCLUDE_DIR:PATH=/usr/include/ffmpeg4.4 # required by qAnimation plugin
+        -DFFMPEG_LIBRARY_DIR:PATH=/usr/lib/ffmpeg4.4 # required by qAnimation plugin
+        -DCORK_RELEASE_LIBRARY_FILE:FILEPATH="${srcdir}/${name}-cork/lib/libcork.a" # required by qcork plugin
+        -DMPIR_RELEASE_LIBRARY_FILE:FILEPATH=/usr/lib/libmpir.so # require by qcork plugin
+        -DPLUGIN_STANDARD_QCSF:BOOL=ON
+        -DPLUGIN_STANDARD_QFACETS:BOOL=ON # requires shapelib
+        -DOPTION_USE_SHAPE_LIB:BOOL=ON
+        -DOPTION_USE_GDAL=ON
+        -DPLUGIN_STANDARD_QHOUGH_NORMALS:BOOL=ON
+        -DPLUGIN_STANDARD_QHPR:BOOL=ON
+        -DPLUGIN_STANDARD_QM3C2:BOOL=ON
+        -DPLUGIN_STANDARD_QPCL:BOOL=ON
+        -DPLUGIN_STANDARD_QPCV:BOOL=ON
+        -DPLUGIN_STANDARD_QPOISSON_RECON:BOOL=ON
+        -DPLUGIN_STANDARD_QRANSAC_SD:BOOL=ON
+        -DPLUGIN_STANDARD_QSRA:BOOL=ON
+        -DOPTION_USE_DXF_LIB:BOOL=ON # required by qsra plugin
+        -DPLUGIN_STANDARD_MASONRY_QAUTO_SEG=ON
+        -DPLUGIN_STANDARD_MASONRY_QMANUAL_SEG=ON
+        -DPLUGIN_STANDARD_QANIMATION=ON
+        -DQANIMATION_WITH_FFMPEG_SUPPORT=ON
+        -DPLUGIN_STANDARD_QBROOM=ON
+        -DPLUGIN_STANDARD_QCANUPO=ON
+        -DPLUGIN_STANDARD_QCOLORIMETRIC_SEGMENTER=ON
+        -DPLUGIN_STANDARD_QJSONRPC=ON
+        -DPLUGIN_STANDARD_QMPLANE=ON
+        -DEIGEN_ROOT_DIR=/usr/include/eigen3
+        
+        
+  )
+  msg2 "Build Cork lib"
+  make -C "${srcdir}/${name}-cork" CXXFLAGS="$CXXFLAGS -DSUPPORT_TOPO_STREAM_OPERATORS"
+  msg2 "Build CloudCompare"
+  cmake -B build -S "${srcdir}/${name}" -G Ninja "${CMAKE_FLAGS[@]}"
+# shellcheck disable=SC2086 # allow slitting for MAKEFLAGS carrying multiple flags.
+  ninja -C build ${MAKEFLAGS:--j1}
 }
 
 package() {
-  cd "$srcdir/trunk/build"
-  make DESTDIR="$pkgdir/" install
+  DESTDIR="$pkgdir" ninja -C build install
 
-  # Icons for .desktop files
-  mkdir -p "${pkgdir}/usr/share/pixmaps"
-  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_icon_256.png"
-  install -D -m 644 "$srcdir/trunk/qCC/images/icon/cc_viewer_icon_256.png" "${pkgdir}/usr/share/pixmaps/cc_viewer_icon_256.png"
+  # install *.desktop files
+  install -D -m 644 "${srcdir}"/*.desktop -t "${pkgdir}"/usr/share/applications/
 
-  # Launcher / .desktop files
-  mkdir -p "${pkgdir}/usr/share/applications"
-  install -D -m 644 "$srcdir/CloudCompare.desktop" "${pkgdir}/usr/share/applications/CloudCompare.desktop"
-  install -D -m 644 "$srcdir/ccViewer.desktop" "${pkgdir}/usr/share/applications/ccViewer.desktop"
+  # copy icons for *.desktop files
+  for size in 16 32 64 256; do
+    install -D -m 644 ${name}/qCC/images/icon/cc_icon_${size}.png "${pkgdir}"/usr/share/icons/hicolor/${size}x${size}/apps/cc_icon.png
+    install -D -m 644 ${name}/qCC/images/icon/cc_viewer_icon_${size}.png "${pkgdir}"/usr/share/icons/hicolor/${size}x${size}/apps/cc_viewer_icon.png
+  done 
+  install -D -m 644 ${name}/qCC/images/icon/cc_icon.svg "${pkgdir}"/usr/share/icons/hicolor/scalable/apps/cc_icon.svg
+  install -D -m 644 ${name}/qCC/images/icon/cc_viewer_icon.svg "${pkgdir}"/usr/share/icons/hicolor/scalable/apps/cc_viewer_icon.svg
 }
+# vim:set sw=2 ts=2 et:
+
+# Generated with git_submodule_PKGBUILD_conf.sh ( https://gist.github.com/bartoszek/41a3bfb707f1b258de061f75b109042b )
+# Call prepare_submodule in prepare() function
+
+prepare_submodule() {
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/IO/qE57IO/extern/libE57Format.url "$srcdir/libE57Format"
+  git -C "$srcdir/cloudcompare" config submodule.extern/CCCoreLib.url "$srcdir/CCCoreLib"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qPoissonRecon/extern/PoissonRecon.url "$srcdir/PoissonRecon"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qMPlane.url "$srcdir/mplane-plugin"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qColorimetricSegmenter.url "$srcdir/ptrans"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qMasonry.url "$srcdir/masonry-cc"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qJSonRPCPlugin.url "$srcdir/JSonRPCPlugin"
+  git -C "$srcdir/cloudcompare" config submodule.plugins/core/Standard/qCanupo/contrib/dlib.url "$srcdir/dlib"
+  git -C "$srcdir/cloudcompare" submodule update --init --recursive
+}
+source+=(
+  "libE57Format::git+https://github.com/asmaloney/libE57Format"
+  "CCCoreLib::git+https://github.com/CloudCompare/CCCoreLib"
+  "PoissonRecon::git+https://github.com/cloudcompare/PoissonRecon"
+  "mplane-plugin::git+https://github.com/hvs-ait/mplane-plugin"
+  "ptrans::git+https://gitlab.univ-nantes.fr/E164955Z/ptrans"
+  "masonry-cc::git+https://github.com/CyberbuildLab/masonry-cc"
+  "JSonRPCPlugin::git+https://gitlab.com/theadib/JSonRPCPlugin"
+  "dlib::git+https://github.com/davisking/dlib"
+)

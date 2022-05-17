@@ -1,15 +1,8 @@
-#!/usr/bin/env xdg-open
-
 [Desktop Entry]
-Version=2.6.2
-Name=ccViewer
-GenericName=PointCloud and Mesh viewer
-Comment=View PointClouds and Meshes
-Type=Application
-Exec=ccViewer %U
-TryExec=ccViewer
-Icon=/usr/share/pixmaps/cc_viewer_icon_256.png
+Name=CloudCompareView
+Comment=A viewer for Cloud Comare, a 3D point cloud (and triangular mesh) processing software
+Icon=cc_viewer_icon
+Exec=ccViewer
 Terminal=false
-MimeType=model/mesh;application/x-3ds;image/x-3ds;application/sla;
-Categories=Graphics;3DGraphics;Viewer;Qt;
-Name[en_US]=ccViewer
+Type=Application
+Categories=Graphics;

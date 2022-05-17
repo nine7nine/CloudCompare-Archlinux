@@ -1,15 +1,8 @@
-#!/usr/bin/env xdg-open
-
 [Desktop Entry]
-Version=2.6.2
 Name=CloudCompare
-GenericName=PointCloud and Mesh processing
-Comment=View/Process PointClouds and meshes
-Type=Application
-Exec=CloudCompare %U
-TryExec=CloudCompare
-Icon=/usr/share/pixmaps/cc_icon_256.png
+Comment=A 3D point cloud (and triangular mesh) processing software
+Icon=cc_icon
+Exec=CloudCompare
 Terminal=false
-MimeType=model/mesh;application/x-3ds;image/x-3ds;application/sla;
-Categories=Graphics;3DGraphics;Viewer;Qt;
-Name[en_US]=CloudCompare
+Type=Application
+Categories=Graphics;
